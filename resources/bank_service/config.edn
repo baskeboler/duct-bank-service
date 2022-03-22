@@ -33,7 +33,13 @@
    :sql ["select * from users where id = ?" id]}
 
   :bank-service.handler/example
-  {:db #ig/ref :duct.database/sql}}
+  {:db #ig/ref :duct.database/sql}
+
+  :duct.middleware.buddy/authentication
+  {:backend :token
+   :authfn  #ig/ref :bank-service.handler/auth-fn}
+  
+  :bank-service.handler/auth-fn {}}
 
  :duct.profile/dev   #duct/include "dev"
  :duct.profile/local #duct/include "local"
