@@ -1,9 +1,36 @@
 {:duct.profile/base
  {:duct.core/project-ns bank-service
 
+  :duct.migrator/ragtime
+  {:migrations  [#ig/ref :bank-service.migration/create-users]}
+
+
+  [:duct.migrator.ragtime/sql :bank-service.migration/create-users]
+  {:up    [#duct/resource "migrations/init.up.sql"]
+   :down  [#duct/resource "migrations/init.down.sql"]}
+
   :duct.router/ataraxy
-  {:routes 
-   {[:get "/example"] [:bank-service.handler/example]}}
+  {:routes
+   {[:get "/example"] [:bank-service.handler/example]
+    "/users"
+    {[:get]                      [:bank-service.handler.users/list]
+     [:get "/" id]               [:bank-service.handler.users/find ^uuid id]
+     [:post   {user :body-params}] [:bank-service.handler.users/create user]}}}
+  [:duct.handler.sql/query :bank-service.handler.users/list]
+  {:sql   ["select * from users"]
+   :hrefs {:href "/users/{id}"}}
+
+  [:duct.handler.sql/insert :bank-service.handler.users/create]
+  {:request  {[_ {:keys [name email password]}] :ataraxy/result}
+   :sql      ["insert into users (name, email, password) 
+               values (?, ? , crypt(?, gen_salt('md5')))"
+              name email password]
+   :location "/users/{last_insert_id}"}
+
+
+  [:duct.handler.sql/query-one :bank-service.handler.users/find]
+  {:request {[_ id] :ataraxy.core/result}
+   :sql ["select * from users where id = ?" id]}
 
   :bank-service.handler/example
   {:db #ig/ref :duct.database/sql}}
@@ -13,7 +40,5 @@
  :duct.profile/prod  {}
 
  :duct.module/logging {}
- :duct.module.web/api
- {}
- :duct.module/sql
- {}}
+ :duct.module.web/api {}
+ :duct.module/sql {}}

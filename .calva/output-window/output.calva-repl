@@ -1,0 +1,71 @@
+; Jacking in...
+; Starting Jack-in Terminal: lein update-in :dependencies conj '[nrepl,"0.9.0"]' -- update-in :plugins conj '[cider/cider-nrepl,"0.27.4"]' -- update-in '[:repl-options,:nrepl-middleware]' conj '["cider.nrepl/cider-middleware"]' -- with-profile +dev repl :headless
+; Hooking up nREPL sessions...
+; Connected session: clj
+; TIPS: 
+;   - You can edit the contents here. Use it as a REPL if you like.
+;   - `alt+enter` evaluates the current top level form.
+;   - `ctrl+enter` evaluates the current form.
+;   - `alt+up` and `alt+down` traverse up and down the REPL command history
+;      when the cursor is after the last contents at the prompt
+;   - Clojure lines in stack traces are peekable and clickable.
+clj꞉user꞉> 
+; Jack-in done.
+clj꞉user꞉> 
+(dev)
+:loaded
+clj꞉dev꞉> 
+(go)
+:duct.migrator.ragtime/rolling-back :bank.migration/create-users#21c2d8c5
+; Execution error (IllegalArgumentException) at ragtime.protocols/eval21155$fn$G (protocols.clj:4).
+; No implementation of method: :run-down! of protocol: #'ragtime.protocols/Migration found for class: nil
+clj꞉dev꞉> 
+(reset)
+:reloading (bank-service.handler.example bank-service.handler.example-test bank-service.main dev user)
+:duct.migrator.ragtime/rolling-back :bank.migration/create-users#21c2d8c5
+; Execution error (IllegalArgumentException) at ragtime.protocols/eval21155$fn$G (protocols.clj:4).
+; No implementation of method: :run-down! of protocol: #'ragtime.protocols/Migration found for class: nil
+clj꞉dev꞉> 
+(reset)
+:reloading ()
+:duct.migrator.ragtime/applying :bank-service.migration/create-users#21c2d8c5
+:duct.server.http.jetty/starting-server {:port 3000}
+:resumed
+clj꞉dev꞉> 
+(reset)
+:reloading ()
+; Missing definitions for refs: :bank-service.handler.users/find, :bank-service.handler.users/create, :bank-service.handler.users/list
+clj꞉dev꞉> 
+; Execution error (ExceptionInfo) at integrant.core/missing-refs-exception (core.cljc:191).
+(reset)
+:reloading ()
+; Execution error (IllegalArgumentException) at integrant.core/resume$fn (core.cljc:450).
+; No method in multimethod 'init-key' for dispatch value: :integrant.composite/duct.handler.sql.insert+bank-service.handler.users.create_22578
+clj꞉dev꞉> 
+(reset)
+:reloading ()
+; Execution error (IllegalArgumentException) at integrant.core/resume$fn (core.cljc:450).
+; No method in multimethod 'init-key' for dispatch value: :integrant.composite/duct.handler.sql.insert+bank-service.handler.users.create_22578
+clj꞉dev꞉> 
+; nREPL Connection was closed
+; Jacking in...
+; Starting Jack-in Terminal: lein update-in :dependencies conj '[nrepl,"0.9.0"]' -- update-in :plugins conj '[cider/cider-nrepl,"0.27.4"]' -- update-in '[:repl-options,:nrepl-middleware]' conj '["cider.nrepl/cider-middleware"]' -- with-profile +dev repl :headless
+; Hooking up nREPL sessions...
+; Connected session: clj
+; TIPS: 
+;   - You can edit the contents here. Use it as a REPL if you like.
+;   - `alt+enter` evaluates the current top level form.
+;   - `ctrl+enter` evaluates the current form.
+;   - `alt+up` and `alt+down` traverse up and down the REPL command history
+;      when the cursor is after the last contents at the prompt
+;   - Clojure lines in stack traces are peekable and clickable.
+clj꞉user꞉> 
+; Jack-in done.
+clj꞉user꞉> 
+(dev)
+:loaded
+clj꞉dev꞉> 
+(go)
+:duct.server.http.jetty/starting-server {:port 3000}
+:initiated
+clj꞉dev꞉> 
