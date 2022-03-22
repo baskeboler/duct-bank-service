@@ -1,0 +1,16 @@
+version: "3.3"
+services:
+  db:
+    image: postgres:11-alpine
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./database/postgres/docker-entrypoint-initdb:/docker-entrypoint-initdb.d/
+    ports:
+      - "${BANK_DB_PORT}:5432"
+    environment:
+      - POSTGRES_DB=${BANK_DB_NAME}
+      - POSTGRES_USER=${BANK_DB_USER}
+      - POSTGRES_PASSWORD=${BANK_DB_PASSWORD}
+
+volumes:
+  db-data:
