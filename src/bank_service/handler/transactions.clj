@@ -21,6 +21,14 @@
                             :balance)]
     (>= account-balance amount)))
 
+(defn account-exists? [db account-id amount]
+  (let [q (sql/format {:select [ 1]
+                       :from [:accounts]
+                       :where [:= :id account-id]})]
+    (not (-> db
+             (jdbc/query q)
+             empty?))))
+
 (defn update-funds! [db account-id amount]
   (let [q ["update accounts set balance = balance + ? where id = ?" amount account-id]]
     (-> db
@@ -32,6 +40,11 @@
                                           :error :insufficient-funds
                                           :account from
                                           :amount amount})))
+  (when-not (account-exists? db to amount)
+    (throw (ex-info "Account does not exist" {:status :error
+                                              :error :account-does-not-exist
+                                              :account to
+                                              :amount amount})))
   (jdbc/with-db-transaction [conn db {:read-only? false}]
     (update-funds! conn from (- amount))
     (update-funds! conn to amount)

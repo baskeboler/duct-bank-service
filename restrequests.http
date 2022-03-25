@@ -24,4 +24,16 @@ Content-Type: application/json
     "email": "victpepesor@google.com",
     "password": "victor"
 }
+###
+get http://localhost:3000/accounts HTTP/1.1
+Accept: application/json
+###
+POST http://localhost:3000/transfer HTTP/1.1
+Content-Type: application/json
 
+
+{
+    "from": "848310a1-7e97-49ae-bda5-8ec1b54863f1",
+    "to": "848310a1-7e97-49ae-ada5-8ec1b54863f1",
+    "amount": 100000
+}
