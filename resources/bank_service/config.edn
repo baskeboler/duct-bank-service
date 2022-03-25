@@ -2,12 +2,17 @@
  {:duct.core/project-ns bank-service
 
   :duct.migrator/ragtime
-  {:migrations  [#ig/ref :bank-service.migration/create-users]}
+  {:migrations  [#ig/ref :bank-service.migration/create-users
+                 #ig/ref :bank-service.migration/create-accounts]}
 
 
   [:duct.migrator.ragtime/sql :bank-service.migration/create-users]
   {:up    [#duct/resource "migrations/init.up.sql"]
    :down  [#duct/resource "migrations/init.down.sql"]}
+
+  [:duct.migrator.ragtime/sql :bank-service.migration/create-accounts]
+  {:up    [#duct/resource "migrations/20220322.up.sql"]
+   :down  [#duct/resource "migrations/20220322.down.sql"]}
 
   :duct.router/ataraxy
   {:routes
@@ -15,21 +20,31 @@
     "/users"
     {[:get]                      [:bank-service.handler.users/list]
      [:get "/" id]               [:bank-service.handler.users/find ^uuid id]
-     [:post   {user :body-params}] [:bank-service.handler.users/create user]}}}
+     [:post   {user :body-params}] [:bank-service.handler.users/create user]}
+    "/accounts"
+    {[:get]        [:bank-service.handler.accounts/list]
+     [:get "/" id] [:bank-service.handler.accounts/find ^uuid id]
+   ;;   [:post   {account :body-params}] [:bank-service.handler.accounts/create account]
+     }
+    "/currencies"
+    {[:get]        [:bank-service.handler.currencies/list]
+     [:get "/" id ] [:bank-service.handler.currencies/find id]}}}
+
   [:duct.handler.sql/query :bank-service.handler.users/list]
   {:sql   ["select * from users"]
    :hrefs {:href "/users/{id}"}}
 
   [:duct.handler.sql/insert :bank-service.handler.users/create]
   {:request  {[_ {:keys [name email password]}] :ataraxy/result}
-   :sql      ["insert into users (name, email, password) 
-               values (?, ? , crypt(?, gen_salt('md5')))"
-              name email password]
+   :sql
+   ["insert into users (name, email, password) 
+     values (?, ? , crypt(?, gen_salt('md5')))"
+    name email password]
    :location "/users/{last_insert_id}"}
 
 
   [:duct.handler.sql/query-one :bank-service.handler.users/find]
-  {:request {[_ id] :ataraxy.core/result}
+  {:request {[_ id] :ataraxy/result}
    :sql ["select * from users where id = ?" id]}
 
   :bank-service.handler/example
@@ -38,8 +53,29 @@
   :duct.middleware.buddy/authentication
   {:backend :token
    :authfn  #ig/ref :bank-service.handler/auth-fn}
-  
-  :bank-service.handler/auth-fn {}}
+
+  :bank-service.handler/auth-fn {}
+
+  [:duct.handler.honeysql-postgres/query :bank-service.handler.accounts/list]
+  {:sql {:select [:*]
+         :from  [:accounts]}
+   :hrefs {:href "/accounts/{id}"}}
+
+  [:duct.handler.honeysql-postgres/query-one :bank-service.handler.accounts/find]
+  {:request {{:keys [id]} :route-params}
+   :sql     {:select [:*]
+             :from   [:accounts]
+             :where  [:= id :id]}}
+
+  [:duct.handler.sql/query :bank-service.handler.currencies/list]
+  {:sql ["select * from currencies"]
+   :hrefs {:href "/currencies/{id}"}}
+
+  [:duct.handler.honeysql-postgres/query-one :bank-service.handler.currencies/find]
+  {:request {{:keys [id]} :route-params}
+   :sql     {:select [:*]
+             :from   [:currencies]
+             :where  [:= :id id]}}}
 
  :duct.profile/dev   #duct/include "dev"
  :duct.profile/local #duct/include "local"
