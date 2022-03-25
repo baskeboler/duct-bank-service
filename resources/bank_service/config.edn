@@ -28,7 +28,10 @@
      }
     "/currencies"
     {[:get]        [:bank-service.handler.currencies/list]
-     [:get "/" id ] [:bank-service.handler.currencies/find id]}}}
+     [:get "/" id] [:bank-service.handler.currencies/find id]}
+    "/transfer"
+    {[:post {info :body-params}]
+     [:bank-service.handler.transactions/transfer info]}}}
 
   [:duct.handler.sql/query :bank-service.handler.users/list]
   {:sql   ["select * from users"]
@@ -55,14 +58,19 @@
    :authfn  #ig/ref :bank-service.handler/auth-fn}
 
   :bank-service.handler/auth-fn {}
-
+  
+  :bank-service.handler.transactions/transfer 
+  {:db #ig/ref :duct.database/sql}
+  
   [:duct.handler.honeysql-postgres/query :bank-service.handler.accounts/list]
-  {:sql {:select [:*]
-         :from  [:accounts]}
+  {:sql {:select [:a.* [:u.email :user-email] [:u.name :user-name]]
+         :from  [[:accounts :a]
+                 [:users :u]]
+         :where [:= :a.user_id :u.id]}
    :hrefs {:href "/accounts/{id}"}}
 
   [:duct.handler.honeysql-postgres/query-one :bank-service.handler.accounts/find]
-  {:request {{:keys [id]} :route-params}
+  {:request {[_ id] :ataraxy/result}
    :sql     {:select [:*]
              :from   [:accounts]
              :where  [:= id :id]}}

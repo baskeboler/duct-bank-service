@@ -4,6 +4,7 @@
             [fipp.edn :refer [pprint]]
             [clojure.tools.namespace.repl :refer [refresh]]
             [clojure.java.io :as io]
+            [clojure.java.jdbc :as jdbc]
             [duct.core :as duct]
             [duct.core.repl :as duct-repl :refer [auto-reset]]
             [eftest.runner :as eftest]
@@ -28,3 +29,9 @@
   (load "local"))
 
 (integrant.repl/set-prep! #(duct/prep-config (read-config) profiles))
+
+(defn db []
+  (-> system (ig/find-derived-1 :duct.database/sql) val :spec))
+
+(defn q [sql]
+  (jdbc/query (db) sql))

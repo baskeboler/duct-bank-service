@@ -22,6 +22,9 @@ create table accounts (
     FOREIGN KEY (currency_id) REFERENCES currencies(id) on delete cascade on update cascade,
     FOREIGN KEY (user_id) REFERENCES users(id) on delete cascade on update cascade
 );
+
+insert into accounts (name, currency_id, user_id, balance)
+select 'Savings', 'USD', id, 1000.0 from users;
 create table transactions (
     id UUID NOT NULL DEFAULT uuid_generate_v4(),
     transaction_type VARCHAR(255) NOT NULL,
