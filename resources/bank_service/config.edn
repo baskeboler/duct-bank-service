@@ -16,22 +16,32 @@
 
   :duct.router/ataraxy
   {:routes
-   {[:get "/example"] [:bank-service.handler/example]
+   
+   {
+    ;; [:get "/"]  [:duct "resources/public"]
+    
+    [:get "/example"] [:bank-service.handler/example]
+    
     "/users"
     {[:get]                      [:bank-service.handler.users/list]
      [:get "/" id]               [:bank-service.handler.users/find ^uuid id]
      [:post   {user :body-params}] [:bank-service.handler.users/create user]}
+    
     "/accounts"
     {[:get]        [:bank-service.handler.accounts/list]
      [:get "/" id] [:bank-service.handler.accounts/find ^uuid id]
    ;;   [:post   {account :body-params}] [:bank-service.handler.accounts/create account]
      }
+    
     "/currencies"
     {[:get]        [:bank-service.handler.currencies/list]
      [:get "/" id] [:bank-service.handler.currencies/find id]}
     "/transfer"
     {[:post {info :body-params}]
-     [:bank-service.handler.transactions/transfer info]}}}
+     [:bank-service.handler.transactions/transfer info]}
+    "/deposit"
+    {[:post {info :body-params}]
+     [:bank-service.handler.transactions/deposit info]}}}
 
   [:duct.handler.sql/query :bank-service.handler.users/list]
   {:sql   ["select * from users"]
@@ -58,10 +68,15 @@
    :authfn  #ig/ref :bank-service.handler/auth-fn}
 
   :bank-service.handler/auth-fn {}
+
+  :bank-service.handler.transactions/transfer
+  {:db #ig/ref :duct.database/sql
+   :logger #ig/ref :duct/logger}
   
-  :bank-service.handler.transactions/transfer 
-  {:db #ig/ref :duct.database/sql}
-  
+  :bank-service.handler.transactions/deposit
+  {:db #ig/ref :duct.database/sql
+   :logger #ig/ref :duct/logger}
+
   [:duct.handler.honeysql-postgres/query :bank-service.handler.accounts/list]
   {:sql {:select [:a.* [:u.email :user-email] [:u.name :user-name]]
          :from  [[:accounts :a]
@@ -90,5 +105,6 @@
  :duct.profile/prod  {}
 
  :duct.module/logging {}
+ :duct.module.web/site {}
  :duct.module.web/api {}
  :duct.module/sql {}}
