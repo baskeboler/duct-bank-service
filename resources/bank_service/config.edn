@@ -3,7 +3,9 @@
 
   :duct.migrator/ragtime
   {:migrations  [#ig/ref :bank-service.migration/create-users
-                 #ig/ref :bank-service.migration/create-accounts]}
+                 #ig/ref :bank-service.migration/create-accounts
+                 #ig/ref :bank-service.migration/withdrawals
+                 #ig/ref  :bank-service.migration/sessions]}
 
 
   [:duct.migrator.ragtime/sql :bank-service.migration/create-users]
@@ -14,35 +16,45 @@
   {:up    [#duct/resource "migrations/20220322.up.sql"]
    :down  [#duct/resource "migrations/20220322.down.sql"]}
 
+  [:duct.migrator.ragtime/sql :bank-service.migration/withdrawals]
+  {:up    [#duct/resource "migrations/20220426.up.sql"]
+   :down  [#duct/resource "migrations/20220426.down.sql"]}
+
+  [:duct.migrator.ragtime/sql :bank-service.migration/sessions]
+  {:up    [#duct/resource "migrations/20220503.up.sql"]
+   :down  [#duct/resource "migrations/20220503.down.sql"]}
+
   :duct.router/ataraxy
   {:routes
-   
-   {
-    ;; [:get "/"]  [:duct "resources/public"]
-    
-    [:get "/example"] [:bank-service.handler/example]
-    
-    "/users"
-    {[:get]                      [:bank-service.handler.users/list]
-     [:get "/" id]               [:bank-service.handler.users/find ^uuid id]
-     [:post   {user :body-params}] [:bank-service.handler.users/create user]}
-    
-    "/accounts"
-    {[:get]        [:bank-service.handler.accounts/list]
-     [:get "/" id] [:bank-service.handler.accounts/find ^uuid id]
-   ;;   [:post   {account :body-params}] [:bank-service.handler.accounts/create account]
-     }
-    
-    "/currencies"
-    {[:get]        [:bank-service.handler.currencies/list]
-     [:get "/" id] [:bank-service.handler.currencies/find id]}
-    "/transfer"
-    {[:post {info :body-params}]
-     [:bank-service.handler.transactions/transfer info]}
-    "/deposit"
-    {[:post {info :body-params}]
-     [:bank-service.handler.transactions/deposit info]}}}
 
+   {"/api"
+    {"/login"            {[:post {login-info :body-params}] [:bank-service.handler.auth/login login-info]}
+     "/signup"            {[:post {signup-info :body-params}] [:bank-service.handler.auth/signup signup-info]}
+
+   ;;   [:get "/example"] [:bank-service.handler/example]
+
+     "/users"            {[:get]                      [:bank-service.handler.users/list]
+                          [:get "/" id]               [:bank-service.handler.users/find ^uuid id]
+                          [:post   {user :body-params}] [:bank-service.handler.users/create user]}
+
+     "/accounts"         {[:get]        [:bank-service.handler.accounts/list]
+                          [:get "/" id] [:bank-service.handler.accounts/find ^uuid id]
+   ;;   [:post   {account :body-params}] [:bank-service.handler.accounts/create account]
+                          }
+
+     "/currencies"       {[:get]        [:bank-service.handler.currencies/list]
+                          [:get "/" id] [:bank-service.handler.currencies/find id]}
+     "/transfer"         {[:post {info :body-params}] [:bank-service.handler.transactions/transfer info]}
+     "/deposit"          {[:post {info :body-params}] [:bank-service.handler.transactions/deposit info]}
+     "/withdraw"         {[:post {info :body-params}] [:bank-service.handler.transactions/withdraw info]}}}
+
+  ;;  :middleware
+  ;;  {:bank-service/authenticate #ig/ref :duct.middleware.buddy/authentication
+  ;;   :bank-service/authorize    #ig/ref :duct.middleware.buddy/authorization}
+   }
+
+
+;;   :example.auth/basic-auth {}
   [:duct.handler.sql/query :bank-service.handler.users/list]
   {:sql   ["select * from users"]
    :hrefs {:href "/users/{id}"}}
@@ -60,20 +72,40 @@
   {:request {[_ id] :ataraxy/result}
    :sql ["select * from users where id = ?" id]}
 
-  :bank-service.handler/example
-  {:db #ig/ref :duct.database/sql}
+;;   :bank-service.handler/example
+;;   {:db #ig/ref :duct.database/sql}
+
+
+  :bank-service.handler.auth/auth-fn
+  {:db     #ig/ref :duct.database/sql
+   :logger #ig/ref :duct/logger}
+
+  :bank-service.handler.auth/login
+  {:db     #ig/ref :duct.database/sql
+   :logger #ig/ref :duct/logger}
+
+  :bank-service.handler.auth/signup
+  {:db     #ig/ref :duct.database/sql
+   :logger #ig/ref :duct/logger}
 
   :duct.middleware.buddy/authentication
   {:backend :token
-   :authfn  #ig/ref :bank-service.handler/auth-fn}
+   :authfn  #ig/ref :bank-service.handler.auth/auth-fn}
 
-  :bank-service.handler/auth-fn {}
+
+  :duct.middleware.buddy/authorization
+  {:backend :token
+   :authfn  #ig/ref :bank-service.handler.auth/auth-fn}
 
   :bank-service.handler.transactions/transfer
   {:db #ig/ref :duct.database/sql
    :logger #ig/ref :duct/logger}
-  
+
   :bank-service.handler.transactions/deposit
+  {:db #ig/ref :duct.database/sql
+   :logger #ig/ref :duct/logger}
+
+  :bank-service.handler.transactions/withdraw
   {:db #ig/ref :duct.database/sql
    :logger #ig/ref :duct/logger}
 

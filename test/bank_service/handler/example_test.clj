@@ -1,8 +1,7 @@
 (ns bank-service.handler.example-test
   (:require [clojure.test :refer :all]
             [integrant.core :as ig]
-            [ring.mock.request :as mock]
-            [bank-service.handler.example :as example]))
+            [ring.mock.request :as mock]))
 
 (deftest smoke-test
   (testing "example page exists"

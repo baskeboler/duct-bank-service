@@ -10,7 +10,9 @@
             [eftest.runner :as eftest]
             [integrant.core :as ig]
             [integrant.repl :refer [clear halt go init prep reset]]
-            [integrant.repl.state :refer [config system]]))
+            [integrant.repl.state :refer [config system]])
+  (:import [java.time LocalDateTime]
+           [java.time.format DateTimeFormatter]))
 
 (duct/load-hierarchy)
 
@@ -35,3 +37,15 @@
 
 (defn q [sql]
   (jdbc/query (db) sql))
+
+(def migrations-folder "resources/migrations")
+
+(defn new-migration []
+  (let [now        (LocalDateTime/now)
+        name       (.format now DateTimeFormatter/BASIC_ISO_DATE)
+        file-names [(str migrations-folder "/" name ".up.sql")
+                    (str migrations-folder "/" name ".down.sql")]]
+    (doseq [f file-names
+            :let [thefile (io/file f)]]
+      (spit thefile ""))
+    file-names))

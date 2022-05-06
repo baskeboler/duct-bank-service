@@ -11,7 +11,9 @@
                  [duct/module.web "0.7.3"]
                  [org.postgresql/postgresql "42.2.19"]
                  [hden/handler.honeysql-postgres "0.2.0"]
-                 [duct/middleware.buddy "0.2.0"]]
+                 [buddy/buddy-hashers "1.8.158" :exclusions [[cheshire]]]
+                 [duct/middleware.buddy "0.2.0" :exclusions [cheshire com.google.code.findbugs/jsr305]]
+                 [duct/logger.timbre "0.5.0"]]
   :plugins [[duct/lein-duct "0.12.3"]]
   :main ^:skip-aot bank-service.main
   :resource-paths ["resources" "target/resources"]

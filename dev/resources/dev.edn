@@ -1,4 +1,4 @@
 {:duct.database/sql
- {:connection-uri "jdbc:postgresql://localhost:5433/bank"
+ {:connection-uri "jdbc:postgresql://localhost:5432/bank"
   :password "dev"
   :username "bank"}}

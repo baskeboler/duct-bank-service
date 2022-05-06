@@ -7,7 +7,7 @@ create table users(
   updated_at timestamp default current_timestamp,
   unique(name),
   unique(email)
-);
+); 
 insert into users(name, password, email)
 values 
   (
