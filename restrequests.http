@@ -15,7 +15,7 @@ get http://localhost:3000/api/currencies/GBP HTTP/1.1
 Accept: application/json
 
 ###
-POST http://localhost:3000/api/users HTTP/1.1
+POST http://localhost:3000/api/login HTTP/1.1
 Content-Type: application/json
 
 
@@ -24,9 +24,12 @@ Content-Type: application/json
     "email": "victpepesor@google.com",
     "password": "victor"
 }
+
+
 ###
 get http://localhost:3000/api/accounts HTTP/1.1
 Accept: application/json
+
 ###
 POST http://localhost:3000/transfer HTTP/1.1
 Content-Type: application/json
@@ -46,3 +49,20 @@ Content-Type: application/json
 
 {"to": "1e87b3b8-8071-4d55-adc1-6a0d2d8d712f",
 "amount": 100  }
+
+###
+POST http://localhost:3000/api/login HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+
+{"user":"admin", "password":"admin", "email": "admin@admin.com"}
+
+### 
+GET http://localhost:3000/api/example HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Token 5a9e0277b95cb0d10abf56fb8666952f
+
+
+
+

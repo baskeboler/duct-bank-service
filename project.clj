@@ -9,6 +9,8 @@
                  [duct/module.logging "0.5.0"]
                  [duct/module.sql "0.6.1"]
                  [duct/module.web "0.7.3"]
+                 [integrant "0.8.0"]
+                 [ring/ring-core "1.9.3"]
                  [org.postgresql/postgresql "42.2.19"]
                  [hden/handler.honeysql-postgres "0.2.0"]
                  [buddy/buddy-hashers "1.8.158" :exclusions [[cheshire]]]
@@ -17,6 +19,7 @@
   :plugins [[duct/lein-duct "0.12.3"]]
   :main ^:skip-aot bank-service.main
   :resource-paths ["resources" "target/resources"]
+  :source-paths ["src/clj"  ]
   :prep-tasks     ["javac" "compile" ["run" ":duct/compiler"]]
   :middleware     [lein-duct.plugin/middleware]
   :profiles
@@ -24,10 +27,11 @@
    :repl {:prep-tasks   ^:replace ["javac" "compile"]
           :repl-options {:init-ns user}}
    :uberjar {:aot :all}
-   :profiles/dev {}
+   :profiles/dev {:source-paths ["dev/src/clj"]}
    :project/dev  {:source-paths   ["dev/src/clj"]
                   :resource-paths ["dev/resources"]
                   :dependencies   [[integrant/repl "0.3.2"]
                                    [hawk "0.2.11"]
                                    [eftest "0.5.9"]
+                            
                                    [kerodon "0.9.1"]]}})

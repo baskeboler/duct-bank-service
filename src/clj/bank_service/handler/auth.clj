@@ -6,7 +6,7 @@
             [duct.logger :as logging]
             [duct.database.sql]
             [bank-service.model.session.protocol :as session]
-            [bank-service.model.user.core :as user]))
+            [bank-service.model.user.protocol :as u]))
 
 (defn- get-test-token-authfn
   [db logger]
@@ -26,9 +26,9 @@
     (logging/info logger (format "logging in: %s" (str login-info)))
     (logging/info logger (format "db in: %s" (str db)))
     (let [{:keys [user password]} login-info
-          the-user                (when user (user/get-user-by-name db user))]
+          the-user                (when user (u/get-user-by-name db user))]
       (if (some? the-user)
-        (if (user/user-password-valid? db {:username user
+        (if (u/user-password-valid? db {:username user
                                            :password password})
           [::response/ok (session/fetch-or-create-session! db (:id the-user))]
           [::response/unauthorized "Invalid username or password"])

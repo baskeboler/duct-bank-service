@@ -1,7 +1,6 @@
 (ns bank-service.main
   (:require [duct.core :as duct]
-            [bank-service.model.user.core]
-            [bank-service.model.session.core]
+            [bank-service.model.core]
             [bank-service.utils])
   (:gen-class))
 
