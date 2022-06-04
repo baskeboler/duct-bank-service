@@ -25,7 +25,7 @@
           :repl-options {:init-ns user}}
    :uberjar {:aot :all}
    :profiles/dev {}
-   :project/dev  {:source-paths   ["dev/src"]
+   :project/dev  {:source-paths   ["dev/src/clj"]
                   :resource-paths ["dev/resources"]
                   :dependencies   [[integrant/repl "0.3.2"]
                                    [hawk "0.2.11"]

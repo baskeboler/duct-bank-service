@@ -1,6 +1,9 @@
 (ns bank-service.main
-  (:gen-class)
-  (:require [duct.core :as duct]))
+  (:require [duct.core :as duct]
+            [bank-service.model.user.core]
+            [bank-service.model.session.core]
+            [bank-service.utils])
+  (:gen-class))
 
 (duct/load-hierarchy)
 

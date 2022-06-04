@@ -26,37 +26,56 @@
 
   :duct.router/ataraxy
   {:routes
-
    {"/api"
-    {"/login"            {[:post {login-info :body-params}] [:bank-service.handler.auth/login login-info]}
-     "/signup"            {[:post {signup-info :body-params}] [:bank-service.handler.auth/signup signup-info]}
+    {"/login"
+     {[:post {login-info :body-params}]
+      [:bank-service.handler.auth/login login-info]}
 
-   ;;   [:get "/example"] [:bank-service.handler/example]
+     "/signup"
+     {[:post {signup-info :body-params}]
+      [:bank-service.handler.auth/signup signup-info]}
 
-     "/users"            {[:get]                      [:bank-service.handler.users/list]
-                          [:get "/" id]               [:bank-service.handler.users/find ^uuid id]
-                          [:post   {user :body-params}] [:bank-service.handler.users/create user]}
+     [:get "/example"]
+     ^:api-middleware
+     [:example]
 
-     "/accounts"         {[:get]        [:bank-service.handler.accounts/list]
-                          [:get "/" id] [:bank-service.handler.accounts/find ^uuid id]
+     "/users"
+     {[:get]                      [:bank-service.handler.users/list]
+      [:get "/" id]               [:bank-service.handler.users/find ^uuid id]
+      [:post   {user :body-params}] [:bank-service.handler.users/create user]}
+
+     "/accounts"
+     {[:get]        [:bank-service.handler.accounts/list]
+      [:get "/" id] [:bank-service.handler.accounts/find ^uuid id]
    ;;   [:post   {account :body-params}] [:bank-service.handler.accounts/create account]
-                          }
+      }
 
-     "/currencies"       {[:get]        [:bank-service.handler.currencies/list]
-                          [:get "/" id] [:bank-service.handler.currencies/find id]}
-     "/transfer"         {[:post {info :body-params}] [:bank-service.handler.transactions/transfer info]}
-     "/deposit"          {[:post {info :body-params}] [:bank-service.handler.transactions/deposit info]}
-     "/withdraw"         {[:post {info :body-params}] [:bank-service.handler.transactions/withdraw info]}}}
+     "/currencies"
+     {[:get]        [:bank-service.handler.currencies/list]
+      [:get "/" id] [:bank-service.handler.currencies/find id]}
 
-  ;;  :middleware
-  ;;  {:bank-service/authenticate #ig/ref :duct.middleware.buddy/authentication
-  ;;   :bank-service/authorize    #ig/ref :duct.middleware.buddy/authorization}
-   }
+     "/transfer"
+     {[:post {info :body-params}]
+      [:bank-service.handler.transactions/transfer info]}
+
+     "/deposit"
+     {[:post {info :body-params}]
+      [:bank-service.handler.transactions/deposit info]}
+
+     "/withdraw"
+     {[:post {info :body-params}]
+      [:bank-service.handler.transactions/withdraw info]}}}
+   
+   :handlers   {:example #ig/ref :bank-service.handler/example}
+   :middleware {;; :bank-service/authenticate #ig/ref :duct.middleware.buddy/authentication
+                ;; :bank-service/authorize    #ig/ref :duct.middleware.buddy/authorization
+                ;; :wrap-site                 #ig/ref :bank-service.middleware.core/wrap-site
+                :api-middleware #ig/ref :bank-service.middleware.core/api-middleware}}
 
 
 ;;   :example.auth/basic-auth {}
   [:duct.handler.sql/query :bank-service.handler.users/list]
-  {:sql   ["select * from users"]
+  {:sql   ["select id, name, email from users"]
    :hrefs {:href "/users/{id}"}}
 
   [:duct.handler.sql/insert :bank-service.handler.users/create]
@@ -70,10 +89,10 @@
 
   [:duct.handler.sql/query-one :bank-service.handler.users/find]
   {:request {[_ id] :ataraxy/result}
-   :sql ["select * from users where id = ?" id]}
+   :sql ["select id, name, email from users where id = ?" id]}
 
-;;   :bank-service.handler/example
-;;   {:db #ig/ref :duct.database/sql}
+  :bank-service.handler/example
+  {:db #ig/ref :duct.database/sql}
 
 
   :bank-service.handler.auth/auth-fn
@@ -96,6 +115,15 @@
   :duct.middleware.buddy/authorization
   {:backend :token
    :authfn  #ig/ref :bank-service.handler.auth/auth-fn}
+
+  :bank-service.middleware.core/wrap-site {}
+
+  :bank-service.middleware.core/wrap-api {}
+
+  :bank-service.middleware.core/api-middleware
+  {:logger             #ig/ref :duct/logger
+   :wrap-api           #ig/ref :bank-service.middleware.core/wrap-api
+   :buddy-authenticate #ig/ref :duct.middleware.buddy/authentication}
 
   :bank-service.handler.transactions/transfer
   {:db #ig/ref :duct.database/sql
@@ -137,6 +165,6 @@
  :duct.profile/prod  {}
 
  :duct.module/logging {}
- :duct.module.web/site {}
+;;  :duct.module.web/site {}
  :duct.module.web/api {}
  :duct.module/sql {}}

@@ -1,13 +1,12 @@
-(ns bank-service.handler.transactions
-  (:require [clojure.java.jdbc :as jdbc]
-            [integrant.core :as ig]
-            [honeysql-postgres.format]
-            [honeysql.core :as sql]
-            [ataraxy.response :as response]
-            [duct.database.sql]
-            [duct.logger :as logging]
-            [bank-service.utils :refer [str->uuid]]))
-
+(ns bank-service.model.transactions.core 
+  (:require
+   [clojure.java.jdbc :as jdbc]
+   [duct.logger :as logging]
+   [duct.database.sql]
+   [ataraxy.response :as response]
+   [honeysql.core :as sql]
+   [bank-service.model.transactions.protocol :refer [Transactions]]
+   [bank-service.utils :refer [str->uuid]]))
 
 
 (defn has-funds? [db account-id amount]
@@ -77,8 +76,7 @@
 (comment
   (def test-accounts  (map :id (dev/q "select id from accounts")))
   (def acc1 (first test-accounts))
-  (def acc2 (second test-accounts))
-  )
+  (def acc2 (second test-accounts)))
 
 
 
@@ -145,51 +143,33 @@
     (update-funds! db account (- amount))
     {:status :success}))
 
-(defprotocol Transactions
-  (transfer! [db info])
-  (deposit! [db info])
-  (withdraw! [db info]))
-
 (extend-protocol Transactions
   duct.database.sql.Boundary
   (transfer! [{db :spec} {:keys [from to amount]}]
     (try
-      [::response/ok (transfer!* db {:from   (str->uuid from)
-                                     :to     (str->uuid to)
-                                     :amount amount})]
+      [::response/ok
+       (transfer!* db {:from   (str->uuid from)
+                       :to     (str->uuid to)
+                       :amount amount})]
       (catch clojure.lang.ExceptionInfo e
         [::response/internal-server-error (ex-data e)])))
-  
+
   (deposit! [{db :spec} {:keys [to amount]}]
     (try
       [::response/ok (deposit!* db {:to     (str->uuid to)
                                     :amount amount})]
       (catch clojure.lang.ExceptionInfo e
         [::response/internal-server-error (ex-data e)])))
-  
+
   (withdraw! [{db :spec} {:keys [from amount]}]
-            (try
-              [::response/ok (withdraw!*   db {:account   (str->uuid from)
-                                               :amount amount})]
-              (catch clojure.lang.ExceptionInfo e
-                [::response/internal-server-error (ex-data e)]))))
+    (try
+      [::response/ok (withdraw!*   db {:account   (str->uuid from)
+                                       :amount amount})]
+      (catch clojure.lang.ExceptionInfo e
+        [::response/internal-server-error (ex-data e)]))))
 
 
-(defmethod ig/init-key ::transfer [_ {:keys [db logger]}]
-  (fn [{[_ info] :ataraxy/result}]
-    (logging/info logger "transfer " info )
-    (transfer! db info)))
 
-
-(defmethod ig/init-key ::deposit [_ {:keys [db logger]}]
-  (fn [{[_ info] :ataraxy/result}]
-    (logging/info logger (format "deposit: %s" info))
-    (deposit! db info)))
-
-(defmethod ig/init-key ::withdraw [_ {:keys [db logger]}]
-  (fn [{[_ info] :ataraxy/result}]
-    (logging/info logger (format "withdrawal: %s" info))
-    (withdraw! db info)))
 
 (comment
   (let [acc1 (str->uuid "0f36bc09-433e-4b2c-8e2f-984cddfc27ba")
